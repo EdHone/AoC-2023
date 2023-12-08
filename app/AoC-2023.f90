@@ -1,11 +1,10 @@
 program aoc_2023
 
-  use day1_trebuchet_mod, only: scan_calibration_values, &
-                                scan_calibration_values_pt2
-  use day2_cubes_mod,     only: check_game_possibility
+  use day3_engine_mod,    only: check_engine_parts
+  use day4_gondola_mod,   only: total_scratchcard_points
 
   implicit none
 
-  call check_game_possibility
+  call check_engine_parts()
 
 end program aoc_2023

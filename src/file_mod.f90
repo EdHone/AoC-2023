@@ -1,6 +1,7 @@
 module file_mod
 
     use data_kinds_mod, only: i_def, str_def
+    use stdlib_string_type
 
     implicit none
 
@@ -9,10 +10,11 @@ module file_mod
     type, public :: file_type
         private
         character(str_def)  :: path
-        integer(kind=i_def) :: unit = 99
+        integer(kind=i_def) :: unit = 9
     contains
         procedure, public :: open_file
         procedure, public :: readlines
+        procedure, public :: n_lines
     end type file_type
 
     interface file_type
@@ -51,18 +53,46 @@ contains
 
         class(file_type), intent(in) :: self
 
-        character(len=str_def), dimension(:), allocatable :: contents
-        integer :: l, n_lines
+        type(string_type), allocatable :: contents(:)
+        character(str_def) :: buffer
+        integer :: l, data_len
+
+        data_len = self%n_lines()
+        allocate(contents(data_len))
 
         open(unit=self%unit, file=self%path, action='read')
-        !read(self%unit, *), n_lines
-        n_lines = 100
-        allocate(contents(n_lines))
 
-        do l = 1, n_lines
-           read(self%unit, '(A)') contents(l)
+        do l = 1, data_len
+            read(self%unit, '(A)') buffer
+            contents(l) = string_type(buffer)
         enddo
 
+        close(self%unit)
+
     end function readlines
+
+    function n_lines(self) result(nlines)
+
+        implicit none
+
+        class(file_type), intent(in) :: self
+
+        integer :: l, nlines, io
+
+        open(unit=self%unit, file=self%path, action='read')
+
+        nlines = 0
+        do
+            read(self%unit, *, iostat=io)
+            if (io == 0) then
+                nlines = nlines + 1
+            else
+                exit
+            end if
+        end do
+
+        close(self%unit)
+
+    end function n_lines
 
 end module file_mod
